@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- 上述3个meta标签*必须*放在最前面，任何其他内容都*必须*跟随其后！ -->
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="icon" href="/favicon.ico">
+    <title>所有成员 - 班级说说</title>
+    <!-- Bootstrap core CSS -->
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom styles for this template -->
+    <link href="/jumbotron.css" rel="stylesheet">
+    <style type="text/css">
+        body {
+            padding-top: 120px;
+        }
+
+        .one {
+            border-bottom: 1px solid #ccc;
+        }
+        #cont{
+            padding-top: 20px;
+        }
+        .one img {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        .one p {
+            font-size: 18px;
+        }
+    </style>
+</head>
+
+<body>
+<% include header.ejs %>
+
+<div class="container">
+    <h1>所有成员</h1>
+    <!-- Example row of columns -->
+    <div class="" id="cont">
+     
+    </div>
+</div>
+
+<hr>
+
+<footer style="text-align: center;">
+    <p>&copy; Company 2014</p>
+</footer>
+</div>
+<!-- /container -->
+
+
+<!-- Bootstrap core JavaScript
+================================================== -->
+<!-- Placed at the end of the document so the pages load faster -->
+<script src="/js/jquery-1.11.3.min.js"></script>
+<script src="/js/bootstrap.min.js"></script>
+<script>
+    function getList(){
+        $.ajax({
+            url:"/getUserlist",
+            data:{},
+            type:"GET",
+            success:function(result){
+                $("#cont").html('')
+                if(result.code == 1000 && result.data.length > 0){
+                    for(var i= 0;i<result.data.length;i++){
+                        var html='<div class="one" style="overflow:hidden;">'+
+                                '<a target="_blank" href="/userinfo?username='+result.data[i].username+'">'+
+                                    '<p style="float: left;"><img src="/avatar/'+result.data[i].avatar+'"alt=""/> '+result.data[i].username+'</p>'+
+                                '</a>'+
+                            '</div>'
+                        $("#cont").append(html)
+                    }
+                    
+                }else{
+                    $("#cont").html('<p style="text-align:center;">暂无数据！</p>')
+                }
+               
+            }
+        })
+    }
+    getList();
+</script>
+</body>
+</html>

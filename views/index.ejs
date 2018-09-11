@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- 上述3个meta标签*必须*放在最前面，任何其他内容都*必须*跟随其后！ -->
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="icon" href="/favicon.ico">
+
+    <title>班级说说</title>
+    <!-- Bootstrap core CSS -->
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom styles for this template -->
+    <link href="/css/jumbotron.css" rel="stylesheet">
+    <style type="text/css">
+        .grid {
+            height: 200px;
+        }
+
+        .avatar {
+            border-radius: 50%;
+        }
+
+        #quanbushuoshuo {
+            height: auto;
+            margin: 0;
+            margin-bottom: 20px;
+        }
+        .jumbotron{
+            background: none;
+            padding-bottom: 0;
+        }
+        textarea{
+            resize: none;
+            padding: 5px;
+        }
+        .grid{
+            display: flex;
+            height: auto;
+            padding-bottom: 20px;
+            padding-top: 20px;
+            border-bottom: 1px solid #999;
+        }
+        .grid h2 {
+            width: 40px;
+            margin: 0;
+            margin-right: 10px;
+            vertical-align: top;
+        }
+        .grid .content {
+            flex: 1;
+        }
+        .grid .content h4 {
+            margin: 0;
+            margin-bottom: 5px;
+            color: #666;
+        }
+        .grid .content h4 a {
+            float: right;
+            line-break: 12px;
+            font-size: 12px;
+            color:#337ab7;
+            border: none;
+        }
+        .grid .content .time{
+            color: #999;
+            margin-bottom: 5px;
+        }
+        .grid .content .shuoshuo{
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+        .grid .content h4 a:hover{
+            background: none;
+            color: #0370b7
+        }
+    </style>
+    <script src="/js/jquery-1.11.3.min.js"></script>
+    <script src="/js/bootstrap.min.js"></script>
+    <script src="/js/underscore-noflect.js"></script>
+</head>
+
+<body>
+<% include header.ejs %>
+
+<!-- Main jumbotron for a primary marketing message or call to action -->
+<div class="jumbotron">
+    <% if(!login){ %>
+    <!-- 没有登陆的时候，显示登陆提示-->
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-6">
+                <h1>
+                    欢迎！
+                </h1>
+
+                <p>班级说说是我们交流的园地，欢迎注册！</p>
+
+                <p><a class="btn btn-primary btn-lg" href="/regist" role="button">注册</a></p>
+            </div>
+            <div class="col-lg-6">
+                <p>已有账号登陆</p>
+
+                <form>
+                    <div class="form-group">
+                        <label for="username">用户名</label>
+                        <input type="text" class="form-control" id="username" placeholder="用户名，可以是中文，不能和别人重复">
+                    </div>
+                    <div class="form-group">
+                        <label for="password">密码</label>
+                        <input type="password" class="form-control" id="password" placeholder="密码，至少6位">
+                    </div>
+                    <button type="button" id="denglu" class="btn btn-success">登陆</button>
+                </form>
+                <div class="alert alert-danger" role="alert" id="cuowukuang" style="display:none;"></div>
+            </div>
+        </div>
+    </div>
+    <% }else{ %>
+    <!-- 登陆之后，显示发言框-->
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-6">
+                    <textarea name="content" id="content" cols="80" rows="4" placeholder="请输入想发表的内容！！"></textarea>
+                    <button type="button" id="fabiao" class="btn btn-success">发表说说</button>
+                </div>
+            </div>
+        </div>
+    <% } %>
+</div>
+
+<div class="container">
+    <!-- 分页条-->
+    <nav>
+        <ul class="pagination">
+
+        </ul>
+    </nav>
+ 
+    <!-- 分页条-->
+    <!-- 20条记录 -->
+    <div class="row" id="quanbushuoshuo" >
+
+    </div>
+    <!-- 20条记录 -->
+</div>
+<!-- /container -->
+<footer style="text-align: center;">
+    <p>&copy; Company 2014</p>
+</footer>
+
+<script type="text/template" id="moban">
+    <div class="grid">
+        <h2 style="font-size:14px;color:#000;"><img width="40" class="avatar" style="margin-right:5px;" src="/avatar/{{=avatar}}" alt=""/></h2>
+        <div class='content'>
+            <h4>{{=username}}<a class="btn btn-default" href="/userinfo?username={{=username}}" role="button">查看详细</a></h4>
+            <p class="time">{{=datatime}}</p>
+            <p class="shuoshuo">{{=content}}</p>
+
+        </div>
+
+    </div>
+</script>
+
+
+<!-- Bootstrap core JavaScript
+================================================== -->
+<!-- Placed at the end of the document so the pages load faster -->
+
+
+<script type="text/javascript">
+    var $quanbushuoshuo = $("#quanbushuoshuo");
+    //得到模板函数
+    var compiled = _.template($("#moban").html());
+    var page = 1;
+    getPage(page);
+    //请求分页的说说信息
+    function getPage(page) {
+        //将现在的页面内容清除
+       
+        $.ajax({
+            "url": "/getallshuoshuo",
+            "data":{page:page,pageSize:10},
+            "type": "get",
+            "success": function (result) {
+                if(result.code == "1000"){
+                    $("#quanbushuoshuo").html("");
+                    iterator(0);
+                    //迭代器
+                    function iterator(i) {
+                        if (i == result.data.length) {
+                            //在这里书写请求完毕之后做的事情
+                            return;  //不用继续迭代了
+                        }
+                        //组装模板
+                        var htmlstring = compiled(result.data[i]);
+                        //添加DOM
+                        $("#quanbushuoshuo").append($(htmlstring));
+                        iterator(i + 1);
+                       
+                    }
+                    $(".pagination").html("")
+                    //总页数
+                    var pageamount = Math.ceil(result.totNum / 10);
+                    for (var i = 1; i <=pageamount; i++) {
+                        $(".pagination").append("<li ><a href='javascript:;' style='cursor:pointer;'>" + i + "</a></li>");
+                    }
+                    $(".pagination li").eq(page-1).addClass("active");
+                    //监听
+                    $(".pagination li").click(function () {
+                        page = $(this).index()+1;
+                        getPage(page);
+                        $(this).addClass("active").siblings().removeClass("active");
+                    });
+                }
+            }
+        });
+    }
+
+    // //文本框得到焦点，错误提示小时
+    // $("input").focus(function () {
+    //     $("#cuowukuang").fadeOut();
+    // });
+    //登陆按钮，登陆
+    $("#denglu").click(function () {
+        if($("#username").val() == ""){
+            $("#cuowukuang").fadeIn();
+            $("#cuowukuang").html("请输入用户名！！");
+            setTimeout(function(){
+                $("#cuowukuang").fadeOut();
+            },1500)
+            return 
+        }
+        if($("#password").val() == ""){
+            $("#cuowukuang").fadeIn();
+            $("#cuowukuang").html("请输入密码！！");
+            setTimeout(function(){
+                $("#cuowukuang").fadeOut();
+            },1500)
+            return 
+        }
+       //注册按钮的事件，用ajax提交表单
+       $.post("/dologin",{
+           "username" : $("#username").val(),
+           "password" : $("#password").val()
+       },function(result){
+            if(result.code== "1000"){
+               //注册成功
+               window.location.reload();
+            }else if(result.code== "1001"){
+               $("#cuowukuang").fadeIn();
+               $("#cuowukuang").html("用户名不存在");
+               setTimeout(function(){
+                $("#cuowukuang").fadeOut();
+               },1500)
+             }else if(result.code == "1002"){
+               $("#cuowukuang").fadeIn();
+               $("#cuowukuang").html("密码错误！");
+               setTimeout(function(){
+                $("#cuowukuang").fadeOut();
+               },1500)
+            }else if(result.code == "1003"){
+                $("#cuowukuang").fadeIn();
+                $("#cuowukuang").html("服务器内部错误！");
+                setTimeout(function(){
+                    $("#cuowukuang").fadeOut();
+                },1500)
+           }
+       });
+    });
+
+    //点击发布按钮之后做的事情
+    $("#fabiao").click(function () {
+        if($("#content").val() == ""){
+            alert("请输入发表的内容！！");
+        }
+        //注册按钮的事件，用ajax提交表单
+        $.post("/doshuoshuo", {
+            "content": $("#content").val()
+        }, function (result) {
+            if (result.code== "1000") {
+                //注册成功
+                alert("发布成功");
+                getPage(1)
+            } else {
+                alert("请联系管理员，发布失败");
+            }
+        });
+    });
+</script>
+</body>
+</html>
