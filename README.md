@@ -1,0 +1,2 @@
+# banjishuoshuo
+基于node,js的express框架和mongodb数据库开发的班级说说项目
